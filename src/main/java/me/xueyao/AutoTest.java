@@ -6,8 +6,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Simon.Xue
@@ -55,16 +55,24 @@ public class AutoTest {
             WebElement kWait = ls.findElement(By.className("KWait"));
             List<WebElement> inputl = kWait.findElements(By.tagName("input"));
             if (inputl.size() > 4) {
-                for (WebElement webElement : inputl) {
+                int i = new Random().nextInt(4);
+                inputl.get(i).click();
+                webDriver.findElement(By.id("btnNext")).click();
+
+                /*for (WebElement webElement : inputl) {
                     webElement.click();
                     webDriver.findElement(By.id("btnNext")).click();
                     break;
-                }
+                }*/
+
             } else {
-                for (WebElement webElement : inputl) {
+                int i = new Random().nextInt(2);
+                inputl.get(i).click();
+
+                /*for (WebElement webElement : inputl) {
                     webElement.click();
                     break;
-                }
+                }*/
             }
 
         }
@@ -73,10 +81,10 @@ public class AutoTest {
         int count = lis.size();
         WebElement element = webDriver.findElement(By.id("btnAct" + count));
         element.findElement(By.tagName("input")).click();
-        Thread.sleep(1000);
+        Thread.sleep(500);
         //再次确认
         webDriver.switchTo().alert().accept();
-        Thread.sleep(1000);
+        Thread.sleep(500);
         //关闭窗口
         webDriver.quit();
     }
@@ -176,12 +184,12 @@ public class AutoTest {
         //删除所有Cookie
         webDriver.manage().deleteAllCookies();
 
-        webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        //webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
         return webDriver;
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         for (int i = 0; i < 100; i++) {
             autoMarkHomework();
             System.out.println("健康素养学习测评系统做 " + i + "遍");

@@ -7,7 +7,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * @author Simon.Xue
@@ -23,20 +22,22 @@ public class AutoTest {
 
         webDriver.get("http://www.jscdc.cn/");
         webDriver.findElement(By.linkText("疾控服务")).click();
-        webDriver.findElement(By.xpath("//*[@class='jkPhone']/ul/li[3]/a")).click();
-
+        WebElement healthElement = webDriver.findElement(By.xpath("//*[@class='zztg']/ul/a[2]"));
+        String href = healthElement.getAttribute("href");
+        webDriver.get(href);
+        //webDriver.findElement(By.linkText("健康素养网上学习系统")).click();
 
         String currentHandle = webDriver.getWindowHandle();
         System.out.println("currentHandle:" + currentHandle);
 
-        Set<String> windowHandles = webDriver.getWindowHandles();
+        /*Set<String> windowHandles = webDriver.getWindowHandles();
         for (String s : windowHandles) {
             if (s.equals(currentHandle)) {
                 continue;
             } else {
                 webDriver.switchTo().window(s);
             }
-        }
+        }*/
 
 
         System.out.println(webDriver.getTitle());
@@ -85,7 +86,9 @@ public class AutoTest {
         //再次确认
         webDriver.switchTo().alert().accept();
         Thread.sleep(500);
+
         //关闭窗口
+
         webDriver.quit();
     }
 

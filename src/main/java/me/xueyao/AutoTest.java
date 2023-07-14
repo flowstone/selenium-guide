@@ -121,7 +121,7 @@ public class AutoTest {
         WebElement countryside = webDriver.findElement(By.id("zone5"));
         List<WebElement> countrysideOptions = countryside.findElements(By.tagName("option"));
         for (WebElement countrysideOption : countrysideOptions) {
-            if ("南禄办".equals(countrysideOption.getText())) {
+            if ("石湖镇".equals(countrysideOption.getText())) {
                 countrysideOption.click();
             }
         }
@@ -163,13 +163,13 @@ public class AutoTest {
         WebElement metier = webDriver.findElement(By.id("metier"));
         List<WebElement> metierOptions = metier.findElements(By.tagName("option"));
         for (WebElement metierOption : metierOptions) {
-            if ("饮食服务".equals(metierOption.getText())) {
+            if ("医务人员".equals(metierOption.getText())) {
                 metierOption.click();
             }
         }
         //单位
         WebElement orgName = webDriver.findElement(By.id("orgName"));
-        orgName.sendKeys("饮食服务");
+        orgName.sendKeys("南禄医务人员");
         System.out.println("currentHandle:" + webDriver.getWindowHandle());
     }
 
@@ -193,9 +193,9 @@ public class AutoTest {
     }
 
     public static void main(String[] args) throws Exception {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 700; i++) {
             autoMarkHomework();
-            System.out.println("健康素养学习测评系统做 " + i + "遍");
+             System.out.println("健康素养学习测评系统做 " + i + "遍");
         }
 
     }

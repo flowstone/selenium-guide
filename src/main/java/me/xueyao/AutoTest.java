@@ -121,7 +121,7 @@ public class AutoTest {
         WebElement countryside = webDriver.findElement(By.id("zone5"));
         List<WebElement> countrysideOptions = countryside.findElements(By.tagName("option"));
         for (WebElement countrysideOption : countrysideOptions) {
-            if ("石湖镇".equals(countrysideOption.getText())) {
+            if ("南禄办".equals(countrysideOption.getText())) {
                 countrysideOption.click();
             }
         }

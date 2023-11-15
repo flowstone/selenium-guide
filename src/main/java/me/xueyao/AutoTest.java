@@ -163,13 +163,13 @@ public class AutoTest {
         WebElement metier = webDriver.findElement(By.id("metier"));
         List<WebElement> metierOptions = metier.findElements(By.tagName("option"));
         for (WebElement metierOption : metierOptions) {
-            if ("医务人员".equals(metierOption.getText())) {
+            if ("饮食服务".equals(metierOption.getText())) {
                 metierOption.click();
             }
         }
         //单位
         WebElement orgName = webDriver.findElement(By.id("orgName"));
-        orgName.sendKeys("南禄医务人员");
+        orgName.sendKeys("南禄饮食服务");
         System.out.println("currentHandle:" + webDriver.getWindowHandle());
     }
 

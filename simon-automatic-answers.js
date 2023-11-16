@@ -29,7 +29,7 @@ var zone5 = "南禄办";
 var zone5Code = "3208261800";
 var metier = "饮食服务";
 var metierStatus = "04";
-console.log("市:", zone3, "区:", zone4, "街道:", zone5, "职业:", metier);
+console.log("市:", zone3, "区:", zone4, "街道:", zone5, "职业:", metier,"职业编号:", metierStatus);
 
 // 工资
 var economicIncomeStatus = 6;
@@ -49,7 +49,7 @@ var age = ageArr[Math.floor(Math.random() * ageArr.length)];
 var educationStatusArr = ["1","2","3","4"];
 var educationStatus = educationStatusArr[Math.floor(Math.random() * educationStatusArr.length)];
 var realname = getRandomName();
-console.log("姓名:", realname, "性别:", sex, "年龄:", age, "文化程度:", educationStatus);
+console.log("姓名:", realname, "性别:", sex, "年龄:", age, "文化程度:", educationStatus, "工资:", economicIncomeStatus, "婚姻状态:", marriageStatus, "单位:", orgName);
 
 /**
  * https://www.jscdc.cn/KABP2011/pages/kabpstudy_new.html?zone3=3208000000&zone4=3208260000&zone5=3208261500"
@@ -83,7 +83,9 @@ var getExamRequestParams = querystring.stringify(getExamRequestParamsJson);
 // 获得题库列表
 var getExamListUrl = "https://www.jscdc.cn/KABP2011/KABPStudy/buildSubjectJSONString.action?" + getExamRequestParams;
 console.log("获得题库列表,拼接后最终URL:",getExamListUrl);
-// ----------------------------------------
+
+
+// ---------------初始化【开始】------------------
 // 真实题目序号
 var taPaperListPaperIdArr = new Array();
 // 正确答案
@@ -108,7 +110,7 @@ var taPaperListKnowledgeRightNumber = 0;
 var taPaperListRightNumber = 0;
 // 所有题数
 var taPaperListSubjectNumber = 0;
-// ----------------------------------------
+// ---------------初始化【结束】------------------
 
 
 /**
@@ -158,7 +160,7 @@ var taPaperListSubjectNumber = 0;
  * taPaperList.linkphone: 
  * taPaperList.zoneName: 机场产业园区
  */
-
+// ---------------初始化【开始】------------------
 var taPaperListMetier = "";
 // 职业不是学生时，为0
 var taPaperListStudentLevel = "";
@@ -215,6 +217,7 @@ var taPaperListCardNumber = "";
 var taPaperListLinkphone = "";
 // 街道
 var taPaperListZoneName = "";
+// ---------------初始化【结束】------------------
 
 
 new Promise((resolve, rejects) => {
@@ -295,7 +298,7 @@ new Promise((resolve, rejects) => {
             var resultStatus = JSON.stringify(tempArr[1]);
             console.log("返回状态结果:", resultStatus);
             
-            
+            // 原网站用前端计算得分
             var totalRat = ((parseFloat((parseFloat(taPaperListKnowledgeRightNumber) + parseFloat(taPaperListActionRightNumber)) / (parseInt(taPaperListKnowledgeNumber) + parseInt(taPaperListActionNumber)))).toFixed(2)) * 100;
             console.log("您的得分(估算)：", totalRat);
         }

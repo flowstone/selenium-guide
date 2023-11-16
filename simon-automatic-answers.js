@@ -1,3 +1,4 @@
+const request = require('request');
 /**
  * 性别 男1   女2
  * 年龄 stcCallback1002
@@ -12,10 +13,14 @@
  * --------------------
  */
 var city = "淮安市";
-var district = "涟水县";
+var cityCode = "3208000000";
+var county = "涟水县";
+var countyCode = "3208260000";
 var street = "南禄办";
-var job = "04";
-console.log("市:", city, "区:", district, "街道:", street, "职业:", job);
+var streetCode = "3208261800";
+var job = "饮食服务";
+var jobCode = "04";
+console.log("市:", city, "区:", county, "街道:", street, "职业:", job);
 
 // 性别
 var sexArr = ["1","2"];
@@ -29,6 +34,56 @@ var degree = degreeArr[Math.floor(Math.random() * degreeArr.length)];
 var realname = getRandomName();
 console.log("姓名:", realname, "性别:",sex,"年龄:",age,"文化程度:",degree);
 
+/**
+ * https://www.jscdc.cn/KABP2011/pages/kabpstudy_new.html?zone3=3208000000&zone4=3208260000&zone5=3208261500"
+ * +"&orgName=&sex=1&nametext=1&marriageStatus=2&ageGroup=04&educationStatus=3&metier=02&studentLevel=0"
+ * +"&economicIncomeStatus=6&zone3text=%E6%B7%AE%E5%AE%89%E5%B8%82&zone4text=%E6%B6%9F%E6%B0%B4%E5%8E%BF"
+ * +"&zone5text=%E6%9C%BA%E5%9C%BA%E4%BA%A7%E4%B8%9A%E5%9B%AD%E5%8C%BA&sextext=%E7%94%B7&marriageStatustext=%E6%9C%AA%E5%A9%9A"
+ * +"&ageGrouptext=25%EF%BD%9E30%E5%B2%81%E4%BB%A5%E4%B8%8B&educationStatustext=%E9%AB%98%E4%B8%AD/%E8%81%8C%E9%AB%98/%E4%B8%AD%E4%B8%93"
+ * +"&metiertext=%E6%95%99%E5%B8%88&studentLeveltext=------&economicIncomeStatustext=%E6%94%B6%E5%85%A5&lx=3"
+ * +"&lxtext=%E9%A6%96%E9%A1%B5-%3E%E5%81%A5%E5%BA%B7%E7%B4%A0%E5%85%BB%E5%AD%A6%E4%B9%A0%E6%B5%8B%E8%AF%84
+ */
+
+/**
+ * 获取题目
+ * https://www.jscdc.cn/KABP2011/KABPStudy/buildSubjectJSONString.action?examType=3&lxType=%25&studentLevel=02,0&_dc=1700122205727&callback=stcCallback1001
+ */
+
+// 保存试题序号
+var examNoStr = "";
+var examType = "3";//3 学习测评
+var lxType = "%"; //固定值
+var studentLevel = "0"; //如果职业不是学生，则为0
+var dc = new Date().getTime();//获得_dc值 时间戳 13位
+var url = "https://www.jscdc.cn/KABP2011/KABPStudy/buildSubjectJSONString.action?"
+    + "examType="+examType+"&lxType="+lxType+"&studentLevel="+jobCode+","+studentLevel+"&_dc="+dc+"&callback=stcCallback1001";
+request(encodeURI(url),(err,rep,body)=>{
+    if(err) {
+        console.warn("请求页面错误 err:",err)
+    }
+    if (rep.statusCode == 200 && body) {
+        console.log("拉取题库，请求的URL地址：",rep.request.href)
+        var resultJsonData = JSON.parse(body.substring(16, body.length - 1));
+        console.log("生成的试题题数：", resultJsonData.total);
+        //console.log("处理后的JSON格式数据：", resultJsonData.results);
+        var resultArr = resultJsonData.results;
+        for (var index in resultArr)  {
+            var no = parseInt(index) + 1;
+            var temp = resultArr[index];
+            console.log("问题" + no + ":", temp.subjectContent);
+            /**
+             * subjectType
+             * 1 判断题 
+             * 2 单选题
+             * 3 多选题
+             */
+            console.log("题目类型 判断题(1)、单选题(2)、多选题(3):", temp.subjectType);
+            console.log("选择:", temp.answer1, temp.answer2, temp.answer3, temp.answer4);
+            console.log("正确答案:", temp.answer);
+            
+        }
+    }
+})
 
 
 

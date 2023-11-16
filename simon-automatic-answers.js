@@ -1,6 +1,10 @@
+const { rejects } = require('assert');
+const { resolve } = require('path');
+const querystring = require('querystring');
 const request = require('request');
 /**
  * 性别 男1   女2
+ * ------------------
  * 年龄 stcCallback1002
  * 03,04,05,06,07,08,09
  * --------------------
@@ -11,16 +15,29 @@ const request = require('request');
  * 医务人员 06
  * 饮食服务 04
  * --------------------
+ * 工资 economicIncomeStatus
+ * 1,2,3,4,5,6 学生选择1，否则选择6
+ * --------------------
+ * 婚姻状况 marriageStatus
+ * 1,2 目前默认 2
  */
-var city = "淮安市";
-var cityCode = "3208000000";
-var county = "涟水县";
-var countyCode = "3208260000";
-var street = "南禄办";
-var streetCode = "3208261800";
-var job = "饮食服务";
-var jobCode = "04";
-console.log("市:", city, "区:", county, "街道:", street, "职业:", job);
+var zone3 = "淮安市";
+var zone3Code = "3208000000";
+var zone4 = "涟水县";
+var zone4Code = "3208260000";
+var zone5 = "南禄办";
+var zone5Code = "3208261800";
+var metier = "饮食服务";
+var metierStatus = "04";
+console.log("市:", zone3, "区:", zone4, "街道:", zone5, "职业:", metier);
+
+// 工资
+var economicIncomeStatus = 6;
+//婚姻状态
+var marriageStatus = 2;
+var orgName = "饮食服务单位";
+//如果职业不是学生，则为0
+var studentLevel = 0;
 
 // 性别
 var sexArr = ["1","2"];
@@ -29,10 +46,10 @@ var sex = sexArr[Math.floor(Math.random()*sexArr.length)];
 var ageArr = ["03","04","05","06","07","08","09"];
 var age = ageArr[Math.floor(Math.random() * ageArr.length)];
 //文化程度
-var degreeArr = ["1","2","3","4"];
-var degree = degreeArr[Math.floor(Math.random() * degreeArr.length)];
+var educationStatusArr = ["1","2","3","4"];
+var educationStatus = educationStatusArr[Math.floor(Math.random() * educationStatusArr.length)];
 var realname = getRandomName();
-console.log("姓名:", realname, "性别:",sex,"年龄:",age,"文化程度:",degree);
+console.log("姓名:", realname, "性别:", sex, "年龄:", age, "文化程度:", educationStatus);
 
 /**
  * https://www.jscdc.cn/KABP2011/pages/kabpstudy_new.html?zone3=3208000000&zone4=3208260000&zone5=3208261500"
@@ -48,48 +65,357 @@ console.log("姓名:", realname, "性别:",sex,"年龄:",age,"文化程度:",deg
  * 获取题目
  * https://www.jscdc.cn/KABP2011/KABPStudy/buildSubjectJSONString.action?examType=3&lxType=%25&studentLevel=02,0&_dc=1700122205727&callback=stcCallback1001
  */
+//-----------------------------------------------
 
-// 保存试题序号
-var examNoStr = "";
-var examType = "3";//3 学习测评
-var lxType = "%"; //固定值
-var studentLevel = "0"; //如果职业不是学生，则为0
-var dc = new Date().getTime();//获得_dc值 时间戳 13位
-var url = "https://www.jscdc.cn/KABP2011/KABPStudy/buildSubjectJSONString.action?"
-    + "examType="+examType+"&lxType="+lxType+"&studentLevel="+jobCode+","+studentLevel+"&_dc="+dc+"&callback=stcCallback1001";
-request(encodeURI(url),(err,rep,body)=>{
-    if(err) {
-        console.warn("请求页面错误 err:",err)
-    }
-    if (rep.statusCode == 200 && body) {
-        console.log("拉取题库，请求的URL地址：",rep.request.href)
-        var resultJsonData = JSON.parse(body.substring(16, body.length - 1));
-        console.log("生成的试题题数：", resultJsonData.total);
-        //console.log("处理后的JSON格式数据：", resultJsonData.results);
-        var resultArr = resultJsonData.results;
-        for (var index in resultArr)  {
-            var no = parseInt(index) + 1;
-            var temp = resultArr[index];
-            console.log("问题" + no + ":", temp.subjectContent);
-            /**
-             * subjectType
-             * 1 判断题 
-             * 2 单选题
-             * 3 多选题
-             */
-            console.log("题目类型 判断题(1)、单选题(2)、多选题(3):", temp.subjectType);
-            console.log("选择:", temp.answer1, temp.answer2, temp.answer3, temp.answer4);
-            console.log("正确答案:", temp.answer);
+//3 学习测评
+var examType = 3;
+//固定值
+var lxType = '%'; 
+// 获得题库的请求参数
+const getExamRequestParamsJson = {
+    "examType": examType,
+    "lxType": lxType,
+    "studentLevel": metierStatus+","+studentLevel,
+    "_dc": new Date().getTime(),
+    "callback": "stcCallback1001"
+}
+var getExamRequestParams = querystring.stringify(getExamRequestParamsJson);
+// 获得题库列表
+var getExamListUrl = "https://www.jscdc.cn/KABP2011/KABPStudy/buildSubjectJSONString.action?" + getExamRequestParams;
+console.log("获得题库列表,拼接后最终URL:",getExamListUrl);
+// ----------------------------------------
+// 真实题目序号
+var taPaperListPaperIdArr = new Array();
+// 正确答案
+var taPaperListPaperAnswerArr = new Array();
+// 行为题1 和 知识题 2
+var taPaperListPaperStyle1Arr = new Array();
+// subjectType 判断题(1) 单选题(2) 多选题(3)
+var taPaperListPaperStyle2Arr = new Array();
+// 题目序号
+var taPaperListAnswerIdArr = new Array();
+// 回答的答案
+var taPaperListAnswerContentArr = new Array();
+// 知识题数
+var taPaperListKnowledgeNumber = 0;
+// 行为题数
+var taPaperListActionNumber = 0;
+// 正确行为题数
+var taPaperListActionRightNumber = 0;
+// 正确知识题数
+var taPaperListKnowledgeRightNumber = 0;
+// 最后正确题数
+var taPaperListRightNumber = 0;
+// 所有题数
+var taPaperListSubjectNumber = 0;
+// ----------------------------------------
+
+
+/**
+ * 提交答案
+ * https://www.jscdc.cn/KABP2011/KABPStudy/paperExamCreate.action?taPaperList.metier=02
+ * &taPaperList.studentLevel=0&taPaperList.sex=1&taPaperList.ageGroup=04&taPaperList.marriageStatus=2
+ * &taPaperList.educationStatus=3&taPaperList.economicIncomeStatus=6
+ * &taPaperList.paperId=650%2C1070%2C1054%2C836%2C1151%2C569%2C1178%2C961%2C1113%2C2020%2C2003%2C1648%2C1791%2C1348%2C1579%2C159%2C194%2C165%2C465%2C410%2C390%2C391%2C268%2C343%2C353%2C447%2C327%2C435%2C361
+ * &taPaperList.paperAnswer=A%2CA%2CB%2CA%2CA%2CA%2CB%2CB%2CB%2CC%2CA%2CA%2CA%2CD%2CC%2CABCDE%2CABDE%2CABCDE%2CA%2CA%2CA%2CB%2CB%2CA%2CA%2CB%2CB%2CA%2CB
+ * &taPaperList.paperStyle1=2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C2%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1
+ * &taPaperList.paperStyle2=1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C2%2C2%2C2%2C2%2C2%2C2%2C3%2C3%2C3%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1%2C1
+ * &taPaperList.answerId=1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9%2C10%2C11%2C12%2C13%2C14%2C15%2C16%2C17%2C18%2C19%2C20%2C21%2C22%2C23%2C24%2C25%2C26%2C27%2C28%2C29
+ * &taPaperList.answerContent=A%2CA%2CA%2CA%2CA%2CA%2CA%2CA%2CA%2CC%2CC%2CC%2CC%2CC%2CC%2CD%2CD%2CC%2CA%2CA%2CA%2CA%2CA%2CA%2CA%2CA%2CA%2CA%2CA
+ * &taPaperList.knowledgeNumber=19&taPaperList.actionNumber=10&taPaperList.actionRightNumber=5
+ * &taPaperList.knowledgeRightNumber=8&taPaperList.rightNumber=13&taPaperList.subjectNumber=29
+ * &taPaperList.examType=3&taPaperList.zone=3208261500&taPaperList.orgName=&taPaperList.logonname=1
+ * &taPaperList.pwd=&taPaperList.cardNumber=&taPaperList.linkphone=
+ * &taPaperList.zoneName=%E6%9C%BA%E5%9C%BA%E4%BA%A7%E4%B8%9A%E5%9B%AD%E5%8C%BA
+ */
+
+/**
+ * taPaperList.metier: 02
+ * taPaperList.studentLevel: 0
+ * taPaperList.sex: 1
+ * taPaperList.ageGroup: 04
+ * taPaperList.marriageStatus: 2
+ * taPaperList.educationStatus: 3
+ * taPaperList.economicIncomeStatus: 6
+ * taPaperList.paperId: 650,1070,1054,836,1151,569,1178,961,1113,2020,2003,1648,1791,1348,1579,159,194,165,465,410,390,391,268,343,353,447,327,435,361
+ * taPaperList.paperAnswer: A,A,B,A,A,A,B,B,B,C,A,A,A,D,C,ABCDE,ABDE,ABCDE,A,A,A,B,B,A,A,B,B,A,B
+ * taPaperList.paperStyle1: 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1
+ * taPaperList.paperStyle2: 1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,1,1,1,1,1,1,1,1,1,1,1
+ * taPaperList.answerId: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29
+ * taPaperList.answerContent: A,A,A,A,A,A,A,A,A,C,C,C,C,C,C,D,D,C,A,A,A,A,A,A,A,A,A,A,A
+ * taPaperList.knowledgeNumber: 19
+ * taPaperList.actionNumber: 10
+ * taPaperList.actionRightNumber: 5
+ * taPaperList.knowledgeRightNumber: 8
+ * taPaperList.rightNumber: 13
+ * taPaperList.subjectNumber: 29
+ * taPaperList.examType: 3
+ * taPaperList.zone: 3208261500
+ * taPaperList.orgName: 
+ * taPaperList.logonname: 1
+ * taPaperList.pwd: 
+ * taPaperList.cardNumber: 
+ * taPaperList.linkphone: 
+ * taPaperList.zoneName: 机场产业园区
+ */
+
+var taPaperListMetier = "";
+// 职业不是学生时，为0
+var taPaperListStudentLevel = "";
+// 性别
+var taPaperListSex = "";
+// 年龄
+var taPaperListAgeGroup = "";
+// 婚姻状态
+var taPaperListMarriageStatus = "";
+// 文化程度
+var taPaperListEducationStatus = "";
+// 收入状态
+var taPaperListEconomicIncomeStatus = "";
+// 真实题目序号
+var taPaperListPaperId = "";
+// 正确答案
+var taPaperListPaperAnswer = "";
+// 行为题1 和 知识题 2
+var taPaperListPaperStyle1 = "";
+
+// subjectType 判断题(1) 单选题(2) 多选题(3)
+var taPaperListPaperStyle2 = "";
+
+// 题目序号
+var taPaperListAnswerId = "";
+
+// 回答的答案
+var taPaperListAnswerContent = "";
+
+/** 
+// 知识题数
+var taPaperListKnowledgeNumber = 19;
+// 行为题数
+var taPaperListActionNumber = 10;
+// 正确行为题数
+var taPaperListActionRightNumber = 5;
+// 正确知识题数
+var taPaperListKnowledgeRightNumber = 8;
+// 最后正确题数
+var taPaperListRightNumber = 13;
+// 所有题数
+var taPaperListSubjectNumber = 29;
+*/
+// 3 学习测评
+var taPaperListExamType = "";
+// 街道编号
+var taPaperListZone = "";
+// 单位
+var taPaperListOrgName = "";
+// 姓名
+var taPaperListLogonname = "";
+var taPaperListPwd = "";
+var taPaperListCardNumber = "";
+var taPaperListLinkphone = "";
+// 街道
+var taPaperListZoneName = "";
+
+
+new Promise((resolve, rejects) => {
+    request(getExamListUrl, (err, rep, body) => {
+        if (err) {
+            console.warn("请求错误 err:", err)
+        }
+        if (rep.statusCode == 200 && body) {
+            console.log("---------- 拉取题库 ----------");
+            //console.log("拉取题库，请求的URL地址：", rep.request.href)
+            var resultJsonData = JSON.parse(body.substring(16, body.length - 1));
+            console.log("生成的试题题数：", resultJsonData.total);
+            taPaperListSubjectNumber = resultJsonData.total;
+            //console.log("处理后的JSON格式数据：", resultJsonData.results);
+            var resultArr = resultJsonData.results;
+            for (var index in resultArr) {
+                setExamIteamParams(index, resultArr);
+            }
+
+            setExamSubmitParams();
+            resolve("success");
+        }
+    })
+ 
+}).then(()=>{
+    console.log("---- 休眠10秒钟后，进入提交答案业务 ----");
+    return wait(10000);
+}).then(()=> {
+    const submitExamRequestParamsJson = {
+        "taPaperList.metier": taPaperListMarriageStatus,
+        "taPaperList.studentLevel": studentLevel,
+        "taPaperList.sex": sex,
+        "taPaperList.ageGroup": age,
+        "taPaperList.marriageStatus": marriageStatus,
+        "taPaperList.educationStatus": educationStatus,
+        "taPaperList.economicIncomeStatus": economicIncomeStatus,
+        "taPaperList.paperId": taPaperListPaperId,
+        "taPaperList.paperAnswer": taPaperListPaperAnswer,
+        "taPaperList.paperStyle1": taPaperListPaperStyle1,
+        "taPaperList.paperStyle2": taPaperListPaperStyle2,
+        "taPaperList.answerId": taPaperListAnswerId,
+        "taPaperList.answerContent": taPaperListAnswerContent,
+        "taPaperList.knowledgeNumber": taPaperListKnowledgeNumber,
+        "taPaperList.actionNumber": taPaperListActionNumber,
+        "taPaperList.actionRightNumber": taPaperListActionRightNumber,
+        "taPaperList.knowledgeRightNumber": taPaperListKnowledgeRightNumber,
+        "taPaperList.rightNumber": taPaperListRightNumber,
+        "taPaperList.subjectNumber": taPaperListSubjectNumber,
+        "taPaperList.examType": taPaperListExamType,
+        "taPaperList.zone": taPaperListZone,
+        "taPaperList.orgName":taPaperListOrgName,
+        "taPaperList.logonname": taPaperListLogonname,
+        "taPaperList.pwd":taPaperListPwd,
+        "taPaperList.cardNumber":taPaperListCardNumber,
+        "taPaperList.linkphone":taPaperListLinkphone,
+        "taPaperList.zoneName": taPaperListZoneName
+    };
+    var submitExamRequestParams = querystring.stringify(submitExamRequestParamsJson);
+    var submitExamUrl = "https://www.jscdc.cn/KABP2011/KABPStudy/paperExamCreate.action?" + submitExamRequestParams;
+
+    console.log("提交答题，拼接后最终URL:", submitExamUrl);
+    request(submitExamUrl, (err, rep, body) => {
+        console.log("---------- 正在提交答案 ----------");
+        if (err) {
+            console.warn("提交错误 err:", err)
+        }
+        if (rep.statusCode == 200 && body) {
+            console.log("---------- 处理中 ----------");
+            //console.log("拉取题库，请求的URL地址：", rep.request.href)
+            // 处理返回结果，坏结构
+            var tempStr = body.replace("[[", "");
+            tempStr = tempStr.substring(0, tempStr.length - 1);
+            var tempArr = tempStr.split("],");
+            // 处理返回结果，坏结构
+
+            console.log("处理后的结果:",tempArr);
+            console.log("返回内容结果:",JSON.parse(tempArr[0]));
+            var resultStatus = JSON.stringify(tempArr[1]);
+            console.log("返回状态结果:", resultStatus);
+            
             
         }
-    }
+    })
 })
 
+/**
+ * 休眠方法
+ * @param {时间毫秒} ms 
+ * @returns 
+ */
+function wait(ms) {
+    return new Promise(resolve => setTimeout(() => resolve(), ms));
+};
+/**
+ * 第一步
+ * 获取每个题目中部分数据
+ */
+function setExamIteamParams(index, resultArr) {
+    var no = parseInt(index) + 1;
+    var temp = resultArr[index];
+
+    console.log("问题" + no + ":", temp.subjectContent);
+    taPaperListAnswerIdArr[index] = no;
+
+    // subjectType 判断题(1) 单选题(2) 多选题(3)
+    console.log("选项类型 判断题(1)、单选题(2)、多选题(3):", temp.subjectType);
+    taPaperListPaperStyle2Arr[index] = temp.subjectType;
 
 
+    // 行为题1 和 知识题 2
+    console.log("题目类型 行为题(1)、知识题(2):", temp.actionOrKnowledge);
+    taPaperListPaperStyle1Arr[index] = temp.actionOrKnowledge;
+    if (parseInt(temp.actionOrKnowledge) == 2) {
+        taPaperListKnowledgeNumber++;
+    } else {
+        taPaperListActionNumber++;
+    }
+
+    console.log("选项:", temp.answer1, temp.answer2, temp.answer3, temp.answer4);
+
+    // 正确答案
+    console.log("正确答案:", temp.answer);
+    taPaperListPaperAnswerArr[index] = temp.answer;
+
+    // 真实题目序号
+    console.log("真实题目序号:", temp.subjectId);
+    taPaperListPaperIdArr[index] = temp.subjectId;
 
 
+    // 如果不是多选题，选择A，否则使用正确答案
+    if (parseInt(temp.subjectType) != 3) {
+        taPaperListAnswerContentArr[index] = temp.answer;
+        taPaperListRightNumber++;
+        if (parseInt(temp.actionOrKnowledge) == 2) {
+            taPaperListKnowledgeRightNumber++;
+        } else {
+            taPaperListActionRightNumber++;
+        }
+    } else {
+        taPaperListAnswerContentArr[index] = "A";
+    }
 
+}
+
+/**
+ * 第二步
+ * 设置提交答题的数据
+ */
+function setExamSubmitParams() {
+    console.log("---------- [开始]设置提交答题的数据 ----------");
+    taPaperListMetier = metierStatus;
+    // 职业不是学生时，为0
+    taPaperListStudentLevel = studentLevel;
+    //性别
+    taPaperListSex = sex;
+    // 年龄
+    taPaperListAgeGroup = age;
+    // 婚姻状态
+    taPaperListMarriageStatus = marriageStatus;
+    // 文化程度
+    taPaperListEducationStatus = educationStatus;
+    // 收入状态
+    taPaperListEconomicIncomeStatus = economicIncomeStatus;
+    // 真实题目序号
+    taPaperListPaperId = taPaperListPaperIdArr.toString();
+    console.log("真实题目序号:", taPaperListPaperId);
+    // 正确答案
+    taPaperListPaperAnswer = taPaperListPaperAnswerArr.toString();
+    console.log("正确答案:", taPaperListPaperAnswer);
+    // 行为题1 和 知识题 2
+    taPaperListPaperStyle1 = taPaperListPaperStyle1Arr.toString();
+    console.log("题目内容类型:", taPaperListPaperStyle1);
+
+    // subjectType 判断题(1) 单选题(2) 多选题(3)
+    taPaperListPaperStyle2 = taPaperListPaperStyle2Arr.toString();
+    console.log("题目选项类型:", taPaperListPaperStyle2);
+
+    // 题目序号
+    taPaperListAnswerId = taPaperListAnswerIdArr.toString();
+    console.log("题目序号:", taPaperListAnswerId);
+
+    // 回答的答案
+    taPaperListAnswerContent = taPaperListAnswerContentArr.toString();
+    console.log("回答的答案:", taPaperListAnswerContent);
+
+    // 3 学习测评
+    taPaperListExamType = examType;
+    // 街道编号
+    taPaperListZone = zone5Code;
+    // 单位
+    taPaperListOrgName = orgName;
+    // 姓名
+    taPaperListLogonname = realname;
+    taPaperListPwd = "";
+    taPaperListCardNumber = "";
+    taPaperListLinkphone = "";
+    // 街道
+    taPaperListZoneName = zone5;
+    console.log("---------- [结束]设置提交答题的数据 ----------");
+
+}
 
 
 /**

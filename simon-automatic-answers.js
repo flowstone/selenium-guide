@@ -296,6 +296,8 @@ new Promise((resolve, rejects) => {
             console.log("返回状态结果:", resultStatus);
             
             
+            var totalRat = ((parseFloat((parseFloat(taPaperListKnowledgeRightNumber) + parseFloat(taPaperListActionRightNumber)) / (parseInt(taPaperListKnowledgeNumber) + parseInt(taPaperListActionNumber)))).toFixed(2)) * 100;
+            console.log("您的得分(估算)：", totalRat);
         }
     })
 })

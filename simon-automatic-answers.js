@@ -243,7 +243,13 @@ new Promise((resolve, rejects) => {
     })
  
 }).then(()=>{
-    console.log("---- 休眠10秒钟后，进入提交答案业务 ----");
+    /**
+     * Math.floor(Math.random() * (max - min + 1)) + min
+     * 生成7000~30000之间的随机数
+     */
+    const timeRandom = Math.floor(Math.random() * (30000 - 7000 + 1)) + 7000;
+    console.log(`---- 休眠${timeRandom}毫秒钟后，进入提交答案业务 ----`);
+
     return wait(10000);
 }).then(()=> {
     const submitExamRequestParamsJson = {
@@ -291,9 +297,8 @@ new Promise((resolve, rejects) => {
             var tempStr = body.replace("[[", "");
             tempStr = tempStr.substring(0, tempStr.length - 1);
             var tempArr = tempStr.split("],");
-            // 处理返回结果，坏结构
-
             console.log("处理后的结果:",tempArr);
+            
             console.log("返回内容结果:",JSON.parse(tempArr[0]));
             var resultStatus = JSON.stringify(tempArr[1]);
             console.log("返回状态结果:", resultStatus);
@@ -321,16 +326,16 @@ function setExamIteamParams(index, resultArr) {
     var no = parseInt(index) + 1;
     var temp = resultArr[index];
 
-    console.log("问题" + no + ":", temp.subjectContent);
+    //console.log("问题" + no + ":", temp.subjectContent);
     taPaperListAnswerIdArr[index] = no;
 
     // subjectType 判断题(1) 单选题(2) 多选题(3)
-    console.log("选项类型 判断题(1)、单选题(2)、多选题(3):", temp.subjectType);
+    //console.log("选项类型 判断题(1)、单选题(2)、多选题(3):", temp.subjectType);
     taPaperListPaperStyle2Arr[index] = temp.subjectType;
 
 
     // 行为题1 和 知识题 2
-    console.log("题目类型 行为题(1)、知识题(2):", temp.actionOrKnowledge);
+    //console.log("题目类型 行为题(1)、知识题(2):", temp.actionOrKnowledge);
     taPaperListPaperStyle1Arr[index] = temp.actionOrKnowledge;
     if (parseInt(temp.actionOrKnowledge) == 2) {
         taPaperListKnowledgeNumber++;
@@ -338,14 +343,14 @@ function setExamIteamParams(index, resultArr) {
         taPaperListActionNumber++;
     }
 
-    console.log("选项:", temp.answer1, temp.answer2, temp.answer3, temp.answer4);
+    //console.log("选项:", temp.answer1, temp.answer2, temp.answer3, temp.answer4);
 
     // 正确答案
-    console.log("正确答案:", temp.answer);
+    //console.log("正确答案:", temp.answer);
     taPaperListPaperAnswerArr[index] = temp.answer;
 
     // 真实题目序号
-    console.log("真实题目序号:", temp.subjectId);
+    //console.log("真实题目序号:", temp.subjectId);
     taPaperListPaperIdArr[index] = temp.subjectId;
 
 

@@ -298,7 +298,7 @@ new Promise((resolve, rejects) => {
             var tempStr = body.replace("[[", "");
             tempStr = tempStr.substring(0, tempStr.length - 1);
             var tempArr = tempStr.split("],");
-            console.log("处理后的结果:",tempArr);
+            //console.log("处理后的结果:",tempArr);
 
             console.log("返回内容结果:",JSON.parse(tempArr[0]));
             var resultStatus = JSON.stringify(tempArr[1]);
@@ -375,7 +375,7 @@ function setExamIteamParams(index, resultArr) {
      * V2. 答案的选择方案
      * True 选择正确答案
      * False 随机选择答案
-     */
+     
     if (Boolean(Math.round(Math.random()))) {
         console.log("正在选择正确的答案:", temp.answer);
         taPaperListAnswerContentArr[index] = temp.answer;
@@ -393,7 +393,51 @@ function setExamIteamParams(index, resultArr) {
 
         taPaperListAnswerContentArr[index] = item;
     }
+    */
+    //选择答案的方案
+    changeQuestionAnswer(index, temp);
+}
 
+/**
+ * 选择答案的方案
+ * @param {问题的下标} index 
+ * @param {问题对象} questionObject 
+ */
+function changeQuestionAnswer(index, questionObject) {
+    var answerArr = ["A", "B", "C", "D"];
+    var answerRandom = answerArr[Math.floor(Math.random() * answerArr.length)];
+    var answerTrue = questionObject.answer;
+
+    if (Boolean(Math.round(Math.random()))) {
+        /**
+         * V2. 答案的选择方案
+         * ----- 选择随机的答案 -----------
+         * True 选择正确答案
+         * False 随机选择答案
+         */
+        //console.log("进入答案选择方案[2]");
+        taPaperListAnswerContentArr[index] = Boolean(Math.round(Math.random())) ? answerTrue : answerRandom;
+        
+    } else {
+        /**
+         * V1. 答案的选择方案
+         * ----- 高得分的答案 -----------
+         * 如果不是多选题，随机，否则使用正确答案
+         */
+        //console.log("进入答案选择方案[1]");
+        taPaperListAnswerContentArr[index] = parseInt(questionObject.subjectType) != 3 ? answerTrue : answerRandom;
+        
+    }
+    // 累加正确的答案数
+    if (taPaperListAnswerContentArr[index] == answerTrue) {
+        taPaperListRightNumber++;
+        if (parseInt(questionObject.actionOrKnowledge) == 2) {
+            taPaperListKnowledgeRightNumber++;
+        } else {
+            taPaperListActionRightNumber++;
+        }
+    }
+    
 }
 
 /**

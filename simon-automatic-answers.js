@@ -250,7 +250,7 @@ new Promise((resolve, rejects) => {
     const timeRandom = Math.floor(Math.random() * (30000 - 7000 + 1)) + 7000;
     console.log(`---- 休眠${timeRandom}毫秒钟后，进入提交答案业务 ----`);
 
-    return wait(10000);
+    return wait(timeRandom);
 }).then(()=> {
     const submitExamRequestParamsJson = {
         "taPaperList.metier": taPaperListMarriageStatus,
@@ -298,7 +298,7 @@ new Promise((resolve, rejects) => {
             tempStr = tempStr.substring(0, tempStr.length - 1);
             var tempArr = tempStr.split("],");
             console.log("处理后的结果:",tempArr);
-            
+
             console.log("返回内容结果:",JSON.parse(tempArr[0]));
             var resultStatus = JSON.stringify(tempArr[1]);
             console.log("返回状态结果:", resultStatus);

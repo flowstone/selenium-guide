@@ -281,6 +281,7 @@ new Promise((resolve, rejects) => {
         "taPaperList.linkphone":taPaperListLinkphone,
         "taPaperList.zoneName": taPaperListZoneName
     };
+    console.log("提交答案的请求参数:", submitExamRequestParamsJson);
     var submitExamRequestParams = querystring.stringify(submitExamRequestParamsJson);
     var submitExamUrl = "https://www.jscdc.cn/KABP2011/KABPStudy/paperExamCreate.action?" + submitExamRequestParams;
 
@@ -353,8 +354,10 @@ function setExamIteamParams(index, resultArr) {
     //console.log("真实题目序号:", temp.subjectId);
     taPaperListPaperIdArr[index] = temp.subjectId;
 
-
-    // 如果不是多选题，选择A，否则使用正确答案
+    /**
+     * V1. 答案的选择方案
+     * ----------- 过期方法 -------------
+     * 如果不是多选题，选择A，否则使用正确答案
     if (parseInt(temp.subjectType) != 3) {
         taPaperListAnswerContentArr[index] = temp.answer;
         taPaperListRightNumber++;
@@ -365,6 +368,30 @@ function setExamIteamParams(index, resultArr) {
         }
     } else {
         taPaperListAnswerContentArr[index] = "A";
+    }
+    */
+
+    /**
+     * V2. 答案的选择方案
+     * True 选择正确答案
+     * False 随机选择答案
+     */
+    if (Boolean(Math.round(Math.random()))) {
+        console.log("正在选择正确的答案:", temp.answer);
+        taPaperListAnswerContentArr[index] = temp.answer;
+        taPaperListRightNumber++;
+
+        if (parseInt(temp.actionOrKnowledge) == 2) {
+            taPaperListKnowledgeRightNumber++;
+        } else {
+            taPaperListActionRightNumber++;
+        }
+    } else {
+        var itemArr = ["A", "B", "C", "D"];
+        var item = itemArr[Math.floor(Math.random() * itemArr.length)]
+        console.log("正在选择随机的答案:", item);
+
+        taPaperListAnswerContentArr[index] = item;
     }
 
 }

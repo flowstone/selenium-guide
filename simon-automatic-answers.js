@@ -222,24 +222,31 @@ var taPaperListZoneName = "";
 
 new Promise((resolve, rejects) => {
     request(getExamListUrl, (err, rep, body) => {
-        if (err) {
-            console.warn("请求错误 err:", err)
-        }
-        if (rep.statusCode == 200 && body) {
-            console.log("---------- 拉取题库 ----------");
-            //console.log("拉取题库，请求的URL地址：", rep.request.href)
-            var resultJsonData = JSON.parse(body.substring(16, body.length - 1));
-            console.log("生成的试题题数：", resultJsonData.total);
-            taPaperListSubjectNumber = resultJsonData.total;
-            //console.log("处理后的JSON格式数据：", resultJsonData.results);
-            var resultArr = resultJsonData.results;
-            for (var index in resultArr) {
-                setExamIteamParams(index, resultArr);
-            }
+        try {
+            if (err) {
+                console.warn("请求【题库列表】错误 err:", err)
+            } else {
+                if (rep.statusCode == 200 && body) {
+                    console.log("---------- 拉取题库 ----------");
+                    //console.log("拉取题库，请求的URL地址：", rep.request.href)
+                    var resultJsonData = JSON.parse(body.substring(16, body.length - 1));
+                    console.log("生成的试题题数：", resultJsonData.total);
+                    taPaperListSubjectNumber = resultJsonData.total;
+                    //console.log("处理后的JSON格式数据：", resultJsonData.results);
+                    var resultArr = resultJsonData.results;
+                    for (var index in resultArr) {
+                        setExamIteamParams(index, resultArr);
+                    }
 
-            setExamSubmitParams();
+                    setExamSubmitParams();
+                }
+            }
+        } catch (e) {
+            console.error("请求【题库列表】失败：",e);
+        } finally {
             resolve("success");
-        }
+        }    
+        
     })
  
 }).then(()=>{
@@ -288,26 +295,34 @@ new Promise((resolve, rejects) => {
     console.log("提交答题，拼接后最终URL:", submitExamUrl);
     request(submitExamUrl, (err, rep, body) => {
         console.log("---------- 正在提交答案 ----------");
-        if (err) {
-            console.warn("提交错误 err:", err)
-        }
-        if (rep.statusCode == 200 && body) {
-            console.log("---------- 处理中 ----------");
-            //console.log("拉取题库，请求的URL地址：", rep.request.href)
-            // 处理返回结果，坏结构
-            var tempStr = body.replace("[[", "");
-            tempStr = tempStr.substring(0, tempStr.length - 1);
-            var tempArr = tempStr.split("],");
-            //console.log("处理后的结果:",tempArr);
+        try {
+            if (err) {
+                console.warn("请求【提交答案】错误 err:", err)
+            } else {
+                if (rep.statusCode == 200 && body) {
+                    //console.log("---------- 处理中 ----------");
+                    //console.log("拉取题库，请求的URL地址：", rep.request.href)
+                    // 处理返回结果，坏结构
+                    var tempStr = body.replace("[[", "");
+                    tempStr = tempStr.substring(0, tempStr.length - 1);
+                    var tempArr = tempStr.split("],");
+                    //console.log("处理后的结果:",tempArr);
 
-            console.log("返回内容结果:",JSON.parse(tempArr[0]));
-            var resultStatus = JSON.stringify(tempArr[1]);
-            console.log("返回状态结果:", resultStatus);
-            
-            // 原网站用前端计算得分
-            var totalRat = ((parseFloat((parseFloat(taPaperListKnowledgeRightNumber) + parseFloat(taPaperListActionRightNumber)) / (parseInt(taPaperListKnowledgeNumber) + parseInt(taPaperListActionNumber)))).toFixed(2)) * 100;
-            console.log("您的得分(估算)：", totalRat);
+                    console.log("返回内容结果:", JSON.parse(tempArr[0]));
+                    var resultStatus = JSON.stringify(tempArr[1]);
+                    console.log("返回状态结果:", resultStatus);
+
+                    // 原网站用前端计算得分
+                    var totalRat = ((parseFloat((parseFloat(taPaperListKnowledgeRightNumber) + parseFloat(taPaperListActionRightNumber)) / (parseInt(taPaperListKnowledgeNumber) + parseInt(taPaperListActionNumber)))).toFixed(2)) * 100;
+                    console.log("您的得分(估算)：", totalRat);
+                }
+            }
+        }catch(e) {
+            console.error("请求【提交答案】失败：", e);
+        }finally {
+            resolve("success");
         }
+        
     })
 })
 

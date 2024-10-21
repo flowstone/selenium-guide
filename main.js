@@ -1,9 +1,6 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('node:path')
 
-const querystring = require('querystring');
-const request = require('request');
-
 
 app.whenReady().then(() => {
     createWindow()

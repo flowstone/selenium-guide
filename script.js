@@ -1,6 +1,7 @@
 
-const querystring = require('querystring');
+const  querystring  = require('querystring');
 const request = require('request');
+const $ = require('jquery');
 
 
 
@@ -317,7 +318,6 @@ function goStudy() {
             } catch (e) {
                 console.error("请求【提交答案】失败：", e);
             } finally {
-                resolve("success");
             }
 
         })

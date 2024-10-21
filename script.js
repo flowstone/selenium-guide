@@ -22,21 +22,25 @@ const educationStatusValue = $('#educationStatus').val();
 // 职业
 const metierValue = $('#metier').val();
 // 操作次数
-const numberValue = $('#number').val();
+const numberValue = $('#opNumber').val();
 // 间隔时间(秒)
-const intervalValue = $('#interval').val();
+const intervalValue = $('#intervalTime').val();
 
 
 
-// 姓名
-var firstnameValue = getRandomName();
-
+/**
+ * 开始答题
+ */
 function goStudy() {
-   
-    console.log("你点击了按钮");
-    console.log("市:", zone3Value, "区:", zone4Value, "街道:", zone5Value, "职业:", metierValue);
-    console.log("姓名:", firstnameValue, "性别:", sexValue, "年龄:", ageGroupValue, "文化程度:", educationStatusValue, "单位:", orgName);
 
+    console.log("你点击了按钮", numberValue, intervalValue);
+    if (numberValue.trim() === '' || intervalValue.trim() === '') {
+        console.log("你点击了按钮111");
+
+        return;
+    } 
+    // 姓名
+    var firstnameValue = getRandomName();
     console.log("你点击了按钮");
     console.log("市:", zone3Value, "区:", zone4Value, "街道:", zone5Value, "职业:", metierValue);
     console.log("姓名:", firstnameValue, "性别:", sexValue, "年龄:", ageGroupValue, "文化程度:", educationStatusValue, "单位:", orgName);
@@ -511,8 +515,6 @@ function goStudy() {
     }
 
 }
-
-
 
 
 

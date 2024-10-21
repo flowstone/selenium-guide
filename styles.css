@@ -1,0 +1,26 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+
+select {
+    FONT-SIZE: 15px;
+    FONT-FAMILY: 微软雅黑, 宋体, Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    border: none;
+}
+
+
+
+.remark {
+    padding-top: 50px;
+    font-size: 14px;
+    FONT-FAMILY: 微软雅黑, 宋体, Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    color: #555;
+}
+
+.container {
+    margin: 20px 20px;
+}
+.row {
+    padding: 10px;
+}
